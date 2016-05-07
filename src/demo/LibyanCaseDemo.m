@@ -36,11 +36,11 @@ HistoricalObjectName = {'P1','P2','P3','P4','P5'};
 
 %%
 % Set aside one realization that we will deem the "reference";
-TruthRealization = 150;
+TruthRealization = 12;
 
 % Plot to verify data structures/choice of input/output
-h1  = PlotInputResponse( HistoricalStruct,TruthRealization);
-%h2  = PlotInputResponse( ForecastStruct,TruthRealization);
+%h1  = PlotInputResponse( HistoricalStruct,TruthRealization);
+h2  = PlotInputResponse( ForecastStruct,TruthRealization);
 
 %% Step 2: Picking the basis splines for functional data analysis
 % This is a trial-error process, where you will pick the order and number
@@ -74,31 +74,12 @@ OutlierPercentile = 95;
     HistoricalStruct, ForecastStruct, TruthRealization, EigenvalueTolerance,...
     OutlierPercentile,1);
 
-%% Step 4: Once we have the posterior means and covariances, we 
-
-% Get the first value of the forecast (all posterior sampled forecasts need
-% to be conditioned to this value)
-ReferenceForecastFirstStep = ForecastStruct.data(TruthRealization,1);
+%% Step 4: Once we have the posterior means and covariances, we
 NumPosteriorSamples = 100;
 
-% The conditioning on mu_posterior, C_posterior against D_obs is not exact
-% as this is done in the canonical space and not our original time-series
-% space, hence we perform rejection sampling on the posterior sampled time
-% series against the last observed historical data, as these two values
-% should be the same. RJTolerance sets the maximum allowed deviation
-% between the two (as a percentage)
-RJTolerance = 1;
-
-% Curve validity determines if we allow upwards or downwards trending
-% curves
-%CurveValidity = -1;  % Use for cumulative (must be monotonically increasing)
-%CurveValidity = 1;  % Use for declines (must be monotonically decreasing)
-CurveValidity = 0;  % Use when either is fine
-
-% Generate posterior samples
-[SampledPosteriorRealizations,~,Hf_post]= SampleCanonicalPosterior(...
+[SampledPosteriorRealizations,Hf_post]= SampleCanonicalPosterior(...
     mu_posterior,C_posterior,NumPosteriorSamples,Hc,B,Hf,...
-    ForecastStruct.time,predPCA,ReferenceForecastFirstStep,RJTolerance,1);
+    ForecastStruct.time,predPCA);
 
 % Compute quantiles
 [PriorQuantiles, PosteriorQuantiles] = ComputeQuantiles(...
@@ -111,4 +92,58 @@ PlotPosteriorSamplesAndQuantiles(ForecastStruct,TruthRealization, ...
 display(['Average Posterior Distance: ' num2str(mean(PosteriorQuantiles(3,:) - ...
     PosteriorQuantiles(1,:)))]);
 
+%% Step 5: Compare with Rejection Sampling
+load('../../data/RejectionSampling/RJ.mat');
+[PriorQuantiles, RJQuantiles] = ComputeQuantiles(ForecastStruct.data,RJStruct.data);
 
+FontSize=32;
+hold on;
+h1 = plot(ForecastStruct.time,PriorQuantiles','color',[0.5 0.5 0.5],...
+    'LineWidth',3);
+h2 = plot(ForecastStruct.time,RJQuantiles,'k:','LineWidth',3);
+h3 = plot(ForecastStruct.time,PosteriorQuantiles,'b--','LineWidth',3);
+
+legend([h1(1), h2(1),h3(1)],'Prior','Direct Forecasting','Rejection Sampling');
+xlabel('t(days)');ylabel(['Forecasted: ' ForecastStruct.name]);axis square;
+title('Quantiles');
+set(gca,'FontSize',FontSize);
+xlim([round(ForecastStruct.time(1)) round(ForecastStruct.time(end)+1)])
+set(gcf,'color','w');
+
+%% Forecast just using P5
+HistoricalObjectName = {'P5'};
+
+% Generates data structure which will be used later for CFCA
+[HistoricalStruct,ForecastStruct] = GenerateDataStructsWithInterpolation(Data,...
+    PropertyNames,ForecastColumn,HistoricalColumn,TimeColumn,HistoricalEnd,...
+    ForecastStart,TotalNumTimeSteps,[6 20],[6 20],ForecastObjectName,...
+    HistoricalObjectName,TotalDaysSimulated);
+ForecastStruct.time = linspace(HistoricalStruct.time(end),...
+    HistoricalStruct.time(end)+4000,length(ForecastStruct.time));
+h1  = PlotInputResponse( HistoricalStruct,TruthRealization);
+
+[ mu_posterior, C_posterior, Dc, Df, Hc, Hf, B, dobs_c] = ComputeCFCAPosterior(...
+    HistoricalStruct, ForecastStruct, TruthRealization, EigenvalueTolerance,...
+    OutlierPercentile,1);
+
+[SampledPosteriorRealizations,Hf_post]= SampleCanonicalPosterior(...
+    mu_posterior,C_posterior,NumPosteriorSamples,Hc,B,Hf,...
+    ForecastStruct.time,predPCA);
+
+% Compute quantiles
+[PriorQuantiles, PosteriorQuantiles] = ComputeQuantiles(...
+    ForecastStruct.data, SampledPosteriorRealizations);
+
+% Plot sampled responses and quantiles
+PlotPosteriorSamplesAndQuantiles(ForecastStruct,TruthRealization, ...
+    SampledPosteriorRealizations,PriorQuantiles,PosteriorQuantiles);
+
+%% Boot strap
+addpath('../bootstrap');
+addpath('../cfca');
+NumBootstrap = 500;
+BootstrapSize = 500;
+
+[omega, d_hat,d_empirical] = FunctionalBootstrap(...
+    HistoricalStruct, ForecastStruct, TruthRealization, EigenvalueTolerance,...
+    OutlierPercentile,NumBootstrap, 0,BootstrapSize);

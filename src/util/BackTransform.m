@@ -20,7 +20,7 @@ function [ Output ] = BackTransform(Input, Match )
 Output = zeros(size(Input));
 
 for i = 1:size(Input,1)
-    figure
+
     OriginalScores = Match(:,i);
     TransformedSamples = Input(i,:);
     BackTransformedValue = zeros(size(TransformedSamples));
@@ -46,18 +46,7 @@ for i = 1:size(Input,1)
             BackTransformedValue(j) = 0.5*(x(index)+x(index+1));
         end
     end
-    
-    subplot(1,3,1)
-    hist(BackTransformedValue);
-    title(['BackTransformed for h^c_' num2str(i)])
-    axis square;
-    subplot(1,3,2)
-    hist(OriginalScores);
-    title(['Original for h^c_' num2str(i)])
-    axis square;
-    subplot(1,3,3)
-    qqplot(OriginalScores,BackTransformedValue)
-    axis square;
+
     
     Output(i,:) = BackTransformedValue;
 end

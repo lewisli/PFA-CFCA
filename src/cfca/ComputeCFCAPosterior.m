@@ -9,7 +9,7 @@ function [ mu_posterior, C_posterior,Dc,Df,Hc,Hf, B, dobs_c] = ...
 % Date:    Feburary 5th 2016
 %
 
-addpath('../thirdparty/fda_matlab');
+%addpath('../thirdparty/fda_matlab');
 
 if (nargin < 5)
     PlotLevel = 1;
@@ -83,8 +83,8 @@ dobs_c=(dobs_fpca-mean(score))*A;
 [Dc,Hc] = LSOutlierDetection(Dc,Hc,OutlierPercentile);
 
 if (PlotLevel == 1)
-    PlotLowDimModels(Df,Hf,dobs_fpca,'f');
-    PlotLowDimModels(Dc,Hc,dobs_c,'c');
+        PlotLowDimModels(Dc,Hc,dobs_c,'c',18);
+    PlotLowDimModels(Df,Hf,dobs_fpca,'f',18);
 end
 
 % Perform a normal score transform
