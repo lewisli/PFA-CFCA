@@ -141,9 +141,9 @@ PlotPosteriorSamplesAndQuantiles(ForecastStruct,TruthRealization, ...
 %% Boot strap
 addpath('../bootstrap');
 addpath('../cfca');
-NumBootstrap = 500;
+NumBootstrap = 1000;
 BootstrapSize = 500;
 
 [omega, d_hat,d_empirical] = FunctionalBootstrap(...
     HistoricalStruct, ForecastStruct, TruthRealization, EigenvalueTolerance,...
-    OutlierPercentile,NumBootstrap, 0,BootstrapSize);
+    NumBootstrap, BootstrapSize);
