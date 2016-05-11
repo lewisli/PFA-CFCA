@@ -1,14 +1,30 @@
 function [ h_output,hf_out] = SampleCanonicalPosterior( ...
-    mu_posterior, C_posterior, NumEstimates,Hc,B,Hf,Time_Forecast,predPCA,...
-    ReferenceForecastFirstStep, RJTolerance,DirectionalValidity)
+    mu_posterior, C_posterior, NumEstimates,Hc,B,Hf,Time_Forecast,...
+    predPCA, ReferenceForecastFirstStep, RJTolerance,DirectionalValidity)
 %SampleCanonicalPosterior Generate samples of the canonical posterior (that
 %is sampled from f(h|d_obs), and reconstructs the time series
-%   Detailed explanation goes here
+%   Samples from a multivariate Gaussian determined by input mean and
+%   covariance, then converts samples from canonical spcae back into time
+%   domain.
+%
+% Inputs:
+%   mu_posterior: posterior mean
+%   C_posterior: posterior covariance
+%   NumEstimates: number of posterior samples to generate
+%   Hc: prior models in canonical space (used to undo normal score
+%   transform)
+%   B: rotation matrix from CCA, (used to undo CCA)
+%   Hf: prior models forecasts in functional space (used to project
+%   posterior samples into functional space)
+%   predPCA: prior models FPCA coefficients (used to project from
+%   functional space back into time domain)
+%   ReferenceForecastFirstStep: Only used for rejection sampling
+%   RJTolerance: Only used for rejection sampling
+%   DirectionalValidity: Only used for rejection sampling
 %
 % Outputs:
 %   h_output: Posterior samples in time domain
-%   hc_output:  Posterior samples in canonical coefficients
-%   HpostCoef: Posterior samples in functional coefficients
+%   hf_out: Posterior samples in functional coefficients
 
 if (nargin < 9)
     ReferenceForecastFirstStep=0;

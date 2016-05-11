@@ -5,11 +5,12 @@ function [ h ] = PlotInputResponse( DataStruct,TruthRealization,FontSize)
 %   HistoricalStruct: Struct containing historical data
 %   ForecastStruct: Struct containing forecast data
 %   TruthRealization: Index of realization taken to be the truth
+%   FontSize: Font size in plots
 %
 % Author: Lewis Li (lewisli@stanford.edu)
 % Date: March 4th 2016
 
-if (nargin < 4)
+if (nargin < 3)
     FontSize=12;
 end
 

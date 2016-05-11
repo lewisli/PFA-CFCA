@@ -1,7 +1,17 @@
 function [ PriorQuantiles,PosteriorQuantiles ] = ComputeQuantiles(Prior,...
     Posterior )
-%ComputeQuantiles Summary of this function goes here
-%   Detailed explanation goes here
+%ComputeQuantiles Compute P10P50P90
+%   Computes P10P50P90 for prior and posterior samples
+%
+% Inputs:
+%   Prior: prior runs
+%   Posterior: posterior runs
+%
+% Outputs:
+%   PriorQuantiles: prior quantiles
+%   PosteriorQuantiles: posterior quantiles
+%
+% 
 
 quantiles = [.1,.5,.9];
 

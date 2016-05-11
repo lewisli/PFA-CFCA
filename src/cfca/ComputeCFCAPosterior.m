@@ -3,15 +3,34 @@ function [ mu_posterior, C_posterior,Dc,Df,Hc,Hf, B, dobs_c] = ...
     EigenTolerance,OutlierPercentile,PlotLevel,FontSize)
 %ComputeCFCAPosterior Computes posterior distribution of forecasts
 %conditioned to d_obs
-%   Detailed explanation goes here
+%   Performs CFCA to compute posterior mean and covariance in canonical
+%   space.
+%
+% Inputs:
+%   HistoricalStruct: Struct containing historical responses
+%   ForecastStrct: Struct containing forecast responses
+%   TruthRealization: Realization number corresponding to the truth
+%   EigenTolerance: % of variance we will use to pick how many eigenvalues
+%   are kept
+%   OutlierPercentile: % of models we will keep if we perform outlier
+%   detection (default is to keep everything 100)
+%   PlotLevel: Plot canonical and functional results
+%   FontSize: Font size in plots
+%
+% Outputs:
+%   mu_posterior: posterior mean
+%   C_posterior: posterior covariance
+%   Dc: historical in canonical coordinates
+%   Df: historical in functional coordinates
+%   Hc: forecast in canonical coordinates
+%   Hf: forecast in functional coordinates
+%   B: tranformation matrix from CCA
+%   dobs_c: observed data in canonical coordinates
 %
 % Author: Lewis Li (lewisli@stanford.edu)
 % Date:    Feburary 5th 2016
-%
 
-%addpath('../thirdparty/fda_matlab');
-
-if (nargin < 5)
+if (nargin < 6)
     PlotLevel = 1;
     FontSize=12;
 end
