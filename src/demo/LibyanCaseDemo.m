@@ -9,49 +9,16 @@
 close all; clear all;
 addpath('../cfca');
 addpath('../util');
-load('../../data/PriorRuns/Prior.mat');
 
-%% Generate data structures
-% We call everything before this step the 'observed' data
-HistoricalEnd = 65; % Corresponds to 3500 days
-
-% We call everything after this step the 'forecast'
-ForecastStart = 125;
-
-% Total number of days simulated in 3DSL
-TotalDaysSimulated=11500;
-
-% Total number of time steps
-TotalNumTimeSteps = 200;
-
-% The column in the Data struct that refers to the attribute we want to use
-% as the forecast/historical
-ForecastColumn = 4;   % Oil Rate
-HistoricalColumn = 4; % Oil Rate
-TimeColumn = 2;       % Simulation Time
-
-% Object on which forecasting is required (New well to be drilled)
-ForecastObjectName = {'PNEW2'};
-
-% Existing wells whose production rates are used as historical data
-HistoricalObjectName = {'P5'};
-
-% Generates data structure which will be used later for CFCA
-[HistoricalStruct,ForecastStruct] = GenerateDataStructsWithInterpolation(...
-    Data,PropertyNames,ForecastColumn,HistoricalColumn,TimeColumn,...
-    HistoricalEnd, ForecastStart,TotalNumTimeSteps,...
-    [6 20],[6 20],ForecastObjectName,...
-    HistoricalObjectName,TotalDaysSimulated);
-
-ForecastStruct.time = linspace(HistoricalStruct.time(end),...
-    HistoricalStruct.time(end)+4000,length(ForecastStruct.time));
+%% Load data structures
+load('../../data/PriorRuns/PriorData.mat');
 
 % Set aside one realization that we will deem the "reference";
 TruthRealization = 12;
 FontSize = 32;
 
 % Plot to verify data structures/choice of input/output
-h1  = PlotInputResponse( HistoricalStruct,TruthRealization);
+h1  = PlotInputResponse( HistoricalStruct,TruthRealization,FontSize);
 h2  = PlotInputResponse( ForecastStruct,TruthRealization,FontSize);
 
 %% Picking the basis functions
@@ -133,21 +100,19 @@ xlim([round(ForecastStruct.time(1)) round(ForecastStruct.time(end)+1)])
 set(gcf,'color','w');
 
 %% Forecast just using P5
-HistoricalObjectName = {'P5'};
+load('../../data/PriorRuns/PriorP5Data.mat');
+h1  = PlotInputResponse( HistoricalStruct,TruthRealization,FontSize);
+h2  = PlotInputResponse( ForecastStruct,TruthRealization,FontSize);
+EigenvalueTolerance = 0.95;
+OutlierPercentile = 100;
+predPCA = ComputeHarmonicScores(ForecastStruct,3);
 
-% Generates data structure which will be used later for CFCA
-[HistoricalStruct,ForecastStruct] = GenerateDataStructsWithInterpolation(Data,...
-    PropertyNames,ForecastColumn,HistoricalColumn,TimeColumn,HistoricalEnd,...
-    ForecastStart,TotalNumTimeSteps,[6 20],[6 20],ForecastObjectName,...
-    HistoricalObjectName,TotalDaysSimulated);
-ForecastStruct.time = linspace(HistoricalStruct.time(end),...
-    HistoricalStruct.time(end)+4000,length(ForecastStruct.time));
-h1  = PlotInputResponse( HistoricalStruct,TruthRealization);
+[ mu_posterior, C_posterior, Dc, Df, Hc, Hf, B, dobs_c] = ...
+    ComputeCFCAPosterior(HistoricalStruct, ForecastStruct, ...
+    TruthRealization, EigenvalueTolerance,...
+    OutlierPercentile,1,FontSize);
 
-[ mu_posterior, C_posterior, Dc, Df, Hc, Hf, B, dobs_c] = ComputeCFCAPosterior(...
-    HistoricalStruct, ForecastStruct, TruthRealization, EigenvalueTolerance,...
-    OutlierPercentile,1);
-
+NumPosteriorSamples = 100;
 [SampledPosteriorRealizations,Hf_post]= SampleCanonicalPosterior(...
     mu_posterior,C_posterior,NumPosteriorSamples,Hc,B,Hf,...
     ForecastStruct.time,predPCA);

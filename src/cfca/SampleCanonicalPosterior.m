@@ -69,8 +69,6 @@ if (all(eig(C_posterior) >= 0))
         h_reconstructed = repmat(eval_fd(Time_Forecast,predPCA{1}.meanfd),...
             1,CycleSize) + PhiH(:,1:numPredCoeffs)*HpostCoef(:,1:numPredCoeffs)';
         
-        close all;
-        
         % Compute difference between first forecasted time and observed value
         % at that time
         Difference = abs(repmat(ReferenceForecastFirstStep,1,CycleSize)-...
