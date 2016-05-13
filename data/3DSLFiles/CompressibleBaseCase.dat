@@ -1,0 +1,220 @@
+RUNOPTIONS
+-- =============================================================
+-- The RUNOPTIONS section sets some global parameters. Required.
+-- =============================================================
+
+    UNITS = FIELD
+    TITLE = "Libyan Case"
+    OMPNUMTHREADS = 4
+    MODEL =IMMISCIBLE
+    DUALPORO =OFF
+    SURVEILLANCE = OFF
+    STARTSIMTIME = 0
+    NOSIM = OFF
+    GRAVITY = ON
+    STARTDATE = 1 Jan 2015
+END RUNOPTIONS
+GRID
+   
+   NX=127 
+   NY=165
+   NZ=15  
+
+   INCLUDE="../include/geometry_large.INC" 
+   INCLUDE="../include/faults_final.INC"
+   INCLUDE="../depo/Scenario=1_Proportion=40.0778_Size=141.8348/depo.GRDECL" 
+
+--Fault Multiplier
+MULTFLT
+fault_1 0.4673 /
+fault_2 0.2201 /
+fault_3 0.2303 /
+fault_4 0.4151 /
+/
+
+PVMULT
+0.25 /
+   
+PERMY=PERMX 
+PERMZ=0.1*PERMX 
+
+ END GRID
+PVT
+-- =============================================================
+-- The PVT section is where the PVT Data is contained. Required.
+-- =============================================================
+CVISCOSITIES
+3.8244 0.1 0.4 /
+SCDENSITIES UNITS= METRIC
+800. 0.9611 1009. /
+
+PVTDEADOILC
+   5000.51  1.0  9.26E-6   1.294   0
+/
+
+PVTDEADWATERC
+ 5000.51   1.00   3.0E-6   0.32   0.0   /
+
+--RSAVG = 0.0
+
+
+--RSAVG = 0.0
+
+END PVT
+BOUNDARIES
+-- =============================================================
+-- The BOUNDARIES section sets the boundary data. Required.
+-- =============================================================
+
+END BOUNDARIES
+
+RELPERMS
+
+-- ================================================================
+-- The RELPERMS section sets the relative permeabilities. Required.
+-- ================================================================
+KRWO
+--    Sw        krw       kro      Pc
+0.3363 0.00000000 0.79390000 
+0.3499 0.00035925 0.71135741 
+0.3635 0.00158730 0.63429342 
+0.3771 0.00378538 0.56256871 
+0.3907 0.00701320 0.49604123 
+0.4043 0.01131469 0.43456607 
+0.4179 0.01672506 0.37799524 
+0.4314 0.02327384 0.32617742 
+0.4450 0.03098659 0.27895773 
+0.4586 0.03988588 0.23617738 
+0.4722 0.04999199 0.19767337 
+0.4858 0.06132331 0.16327804 
+0.4994 0.07389676 0.13281861 
+0.5130 0.08772795 0.10611660 
+0.5266 0.10283142 0.08298716 
+0.5402 0.11922079 0.06323819 
+0.5538 0.13690887 0.04666933 
+0.5674 0.15590773 0.03307054 
+0.5809 0.17622885 0.02222041 
+0.5945 0.19788311 0.01388366 
+0.6081 0.22088091 0.00780773 
+0.6217 0.24523217 0.00371745 
+0.6353 0.27094641 0.00130622 
+0.6489 0.29803276 0.00021853 
+0.6625 0.32650000 0.00000000  
+/
+END RELPERMS
+INITIALCOND
+    EQUILSAT=CRITICAL
+
+        DATUMDEPTH
+            -1070
+    /	
+        DATUMPRESSURE
+            6000
+    /	
+
+
+OWC
+-1073.8591
+/
+  
+END INITIALCOND
+OUTPUT
+-- ====================================================================
+-- The OUTPUT section sets which kind of output is produced. Required.
+-- ====================================================================
+
+3DSLFMT= GRID WELLS 
+ECLIPSEFMT= ON
+
+END OUTPUT
+
+TUNING1D
+
+END
+
+RECURRENT
+
+
+-- =============================================================
+-- The RECURRENT section sets the well conditions. Required.
+-- =============================================================
+
+
+TUNING3D
+    DTMAX=91.25
+END TUNING3D
+
+TUNING1D
+
+END TUNING1D
+
+WELLS
+NAME=P1 TYPE=P I= 19 J= 105 K=1-15 DIA=0.50 SKIN=0 DIR=Z
+NAME=P2 TYPE=P I= 94 J= 146 K=1-15 DIA=0.50 SKIN=0 DIR=Z
+NAME=P3 TYPE=P I=109 J= 51  K=1-15 DIA=0.50 SKIN=0 DIR=Z
+NAME=P4 TYPE=P I=18  J= 31  K=1-8 DIA=0.50 SKIN=0 DIR=Z
+NAME=P5 TYPE=P I=53  J= 93  K=1-15 DIA=0.50 SKIN=0 DIR=Z
+NAME=PNEW2 TYPE=P I=67  J= 77  K=1-15 DIA=0.50 SKIN=0 DIR=Z
+NAME=I1 TYPE=I I=65  J= 17  K=1-8 DIA=0.50 SKIN=0 DIR=Z
+NAME=I2 TYPE=I I=78  J= 57  K=1-15 DIA=0.50 SKIN=0 DIR=Z
+NAME=I3 TYPE=I I=43  J= 148  K=1-15 DIA=0.50 SKIN=0 DIR=Z
+NAME=I4 TYPE=I I=66  J= 143  K=1-15 DIA=0.50 SKIN=0 DIR=Z
+NAME=I5 TYPE=I I=17  J= 79  K=1-15 DIA=0.50 SKIN=0 DIR=Z
+END WELLS
+ 
+TIME=0
+	NAME=P1	RTRAT=4500 LBHP=100 UNITS=F 
+	NAME=P2	RTRAT=4500 LBHP=100 UNITS=F 
+	NAME=P3	RTRAT=4500 LBHP=100 UNITS=F 
+	NAME=P4	RTRAT=4500 LBHP=100 UNITS=F
+        NAME=P5	RTRAT=4500 LBHP=100 UNITS=F
+        NAME=PNEW2 SHUT
+        NAME=I1 SHUT
+        NAME=I2 SHUT
+        NAME=I3 SHUT
+        NAME=I4 SHUT
+        NAME=I5 SHUT
+
+TIME=500
+	NAME=P1	RTRAT=4500 LBHP=100 UNITS=F 
+	NAME=P2	RTRAT=4500 LBHP=100 UNITS=F 
+	NAME=P3	RTRAT=4500 LBHP=100 UNITS=F 
+	NAME=P4	RTRAT=4500 LBHP=100 UNITS=F
+        NAME=P5	RTRAT=4500 LBHP=100 UNITS=F
+        NAME=PNEW2 SHUT
+        NAME=I1 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+        NAME=I2 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+        NAME=I3 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+        NAME=I4 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+        NAME=I5 SHUT
+
+TIME=700
+	NAME=P1	RTRAT=4500 LBHP=100 UNITS=F 
+	NAME=P2	RTRAT=4500 LBHP=100 UNITS=F 
+	NAME=P3	RTRAT=4500 LBHP=100 UNITS=F 
+	NAME=P4	RTRAT=4500 LBHP=100 UNITS=F
+        NAME=P5	RTRAT=4500 LBHP=100 UNITS=F
+        NAME=PNEW2 SHUT
+        NAME=I1 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+        NAME=I2 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+        NAME=I3 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+        NAME=I4 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+        NAME=I5 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+
+TIME=7000
+	NAME=P1	RTRAT=4500 LBHP=100 UNITS=F 
+	NAME=P2	RTRAT=4500 LBHP=100 UNITS=F 
+	NAME=P3	RTRAT=4500 LBHP=100 UNITS=F 
+	NAME=P4	RTRAT=4500 LBHP=100 UNITS=F
+        NAME=P5	RTRAT=4500 LBHP=100 UNITS=F
+        NAME=PNEW2 RTRAT=4500 LBHP=100 UNITS=F
+        NAME=I1 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+        NAME=I2 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+        NAME=I3 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+        NAME=I4 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+        NAME=I5 STRAT=6000 ZWAT=1 UBHP=6600 UNITS=F 
+
+
+TIME=15000
+   
+END RECURRENT
