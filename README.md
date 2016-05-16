@@ -23,7 +23,7 @@ The prior models are generated using the script [here](src/modelGeneration/Gener
 ### Canonical Functional Correlation Analysis
 A Jupyter Notebook providing a step-by-step walkthrough of PFA using CFCA can be found [here](src/notebooks/PFA-CFCA%20Libyan%20Case.ipynb). Alternatively, a demo script is provided [here](src/demo/LibyanCaseDemo.m).
 
-Jupyter notebooks may have issues rendering equations in certain browsers, refer to [this pdf](src/notebooks/PFACFCALibyanCase.pdf) if equations appear to be mangled.
+Jupyter notebooks may have issues rendering equations in certain browsers, refer to [this pdf](src/notebooks/PFACFCALibyanCase.pdf) if equations appear to be mangled. Chrome is recommended.
 
 ## Third Party Code
 The Functonal Data Analysis is courtesy of [Jim Ramsay](http://www.psych.mcgill.ca/misc/fda/software.html "FDA Software").
