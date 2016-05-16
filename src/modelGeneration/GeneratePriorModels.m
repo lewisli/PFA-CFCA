@@ -1,90 +1,96 @@
-% Generate3DSLModels.m
+% GeneratePriorModels.m
+% Demo script to generate a set of prior models from prior reservoir
+% parameters.
+%
+% Author: Lewis Li (lewisli@stanford.edu)
+%
 % Script to generate multiple StudioSL runs starting from some base case
 clear all; close all;
-clc
-%% Set Paths
-% Path to baseline case
-BaseCaseDatPath = '../../data/3DSLFiles/CompressibleBaseCase.dat';
-
-% Allocate a cell array that we will use to store the baseline
-s=cell(GetNumberOfLines(BaseCaseDatPath),1);
-
-fid = fopen(BaseCaseDatPath);
-lineCt = 1;
-tline = fgetl(fid);
-
-while ischar(tline)
-    s{lineCt} = (tline);
-    lineCt = lineCt + 1;
-    tline = fgetl(fid);
-end
 
 % Case Name
 CaseName = 'Prior';
-NbSimu = 500;     % Number of simulations
-NbParams = 12;    % Number of parameters we will vary
 
-% Fixed seed for reproducibility
+% Number of simulations
+NbSimu = 500;     
+
+% Number of parameters we will vary
+NbParams = 12;    
+
+% Set random seed
 rng('shuffle');
 
-%% Set Parameter Ranges
+%% Set Prior Parameter Distributions
 % ParameterRanges is a struct that contains
 Normal = 0;
 Uniform = 1;
 
-ParameterRanges = struct();
-ParameterRanges.('Swir') = [0.2 0.05 Normal]; % Irreducible water saturation
-ParameterRanges.('Swor') = [0.2 0.05 Normal]; % Irreducible oil saturation
-ParameterRanges.('krw_end') = [0.3 0.1 Normal]; % End point water rel perm
-ParameterRanges.('kro_end') = [0.7 0.1 Normal]; % End point oil rel perm
-ParameterRanges.('no') = [2.5 0.2 Normal]; % Oil exponent
-ParameterRanges.('nw') = [2 0.2 Normal]; % Oil exponent
-ParameterRanges.('FaultMulti1') = [0.2 0.8 Uniform]; % Fault 1 trans multiplier
-ParameterRanges.('FaultMulti2') = [0.2 0.8 Uniform]; % Fault 2 trans multiplier
-ParameterRanges.('FaultMulti3') = [0.2 0.8 Uniform]; % Fault 3 trans multiplier
-ParameterRanges.('FaultMulti4') = [0.2 0.8 Uniform]; % Fault 4 trans multiplier
-ParameterRanges.('Viscosity') = [4 0.2 Normal];      % Oil viscosity
-ParameterRanges.('OWC') = [1061 1076 Uniform];       % Oil water contact
+PriorParameterDistribution = struct();
 
-%% Generate actual parameters
-ParameterNames = fieldnames(ParameterRanges);
-ParameterMatrix = struct();
+% Irreducible water saturation
+PriorParameterDistribution.('Swir') = [0.2 0.05 Normal]; 
+
+% Irreducible oil saturation
+PriorParameterDistribution.('Swor') = [0.2 0.05 Normal]; 
+
+% End point water rel perm
+PriorParameterDistribution.('krw_end') = [0.3 0.1 Normal]; 
+
+% End point oil rel perm
+PriorParameterDistribution.('kro_end') = [0.7 0.1 Normal]; 
+
+% Oil Corey exponent
+PriorParameterDistribution.('no') = [2.5 0.2 Normal]; 
+
+% Water Corey exponent
+PriorParameterDistribution.('nw') = [2 0.2 Normal]; 
+
+% Fault 1 trans multiplier
+PriorParameterDistribution.('FaultMulti1') = [0.2 0.8 Uniform];
+
+% Fault 2 trans multiplier
+PriorParameterDistribution.('FaultMulti2') = [0.2 0.8 Uniform]; 
+
+% Fault 3 trans multiplier
+PriorParameterDistribution.('FaultMulti3') = [0.2 0.8 Uniform]; 
+
+% Fault 4 trans multiplier
+PriorParameterDistribution.('FaultMulti4') = [0.2 0.8 Uniform]; 
+
+% Oil viscosity
+PriorParameterDistribution.('Viscosity') = [4 0.2 Normal];      
+
+% Oil water contact
+PriorParameterDistribution.('OWC') = [1061 1076 Uniform];      
+
+%% Generate prior models by sampling from prior parameters
+ParameterNames = fieldnames(PriorParameterDistribution);
+PriorModelParameters = struct();
 
 rng('shuffle');
 
+% Iterate over each uncertain reservoir parameter
 for i = 1:numel(ParameterNames)
     ParameterName = ParameterNames{i};
-    ParameterRange = ParameterRanges.(ParameterName);
+    ParameterRange = PriorParameterDistribution.(ParameterName);
     
-    if (i < 0)
-        if (ParameterRange(3) == Normal)
-            Value = ParameterRange(1) + ParameterRange(2)* ParametersValues(:,i);
-        elseif(ParameterRange(3) == Uniform)
-            Value = ParameterRange(1) + ParametersValues(:,i)*...
-                (ParameterRange(2) - ParameterRange(1));
-        end
-    else
-        if (ParameterRange(3) == Normal)
-            Value = ParameterRange(1) + ParameterRange(2)*randn(NbSimu,1);
-        elseif(ParameterRange(3) == Uniform)
-            Value = ParameterRange(1) + rand(NbSimu,1)*...
-                (ParameterRange(2) - ParameterRange(1));
-        end
+    % Sample from uniform/normal distributions
+    if (ParameterRange(3) == Normal)
+        Value = ParameterRange(1) + ParameterRange(2)*randn(NbSimu,1);
+    elseif(ParameterRange(3) == Uniform)
+        Value = ParameterRange(1) + rand(NbSimu,1)*...
+            (ParameterRange(2) - ParameterRange(1));
     end
+
+    % Store sampled value
+    PriorModelParameters.(ParameterName) = Value;
     
-    ParameterMatrix.(ParameterName) = Value;
-    
-    % Figure ID
-   % i
-    figureid = i-floor((i-1)/4)*4
+    % Plot prior values
+    figureid = i-floor((i-1)/4)*4;
     if (mod(i-1,4) == 0)
          figure(floor(i/4)+1);
-         
          figurepic=floor(i/4)+1;
     end
     
-    
-    display([num2str(i) ' to ' num2str(figureid) 'on' num2str(figurepic)]);
     subplot(2,2,figureid);
     
     if (ParameterRange(3) == Normal)
@@ -105,29 +111,29 @@ for i = 1:numel(ParameterNames)
     axis tight;
 end
 
-%save('/home/lewisli/code-dev/directforecasting/data/Compressible/RejectionSample/ParameterMatrix.mat','ParameterMatrix');
-
-%% Construct Rel Perm curves to verify consistency
+%% Construct relative permeability curves using Corey parameters
 clear SW_corey_m;
+warning('off','all')
 RelPermEntries = 25;
 SW_corey_m = zeros(NbSimu,RelPermEntries);
 krw_model = zeros(NbSimu,RelPermEntries);
 kro_model = zeros(NbSimu,RelPermEntries);
 
 for i=1:NbSimu
-    SW_corey_m(i,:) = linspace(ParameterMatrix.('Swir')(i), ...
-        1 - ParameterMatrix.('Swor')(i),RelPermEntries);
+    SW_corey_m(i,:) = linspace(PriorModelParameters.('Swir')(i), ...
+        1 - PriorModelParameters.('Swor')(i),RelPermEntries);
 end
 
+hCorey = figure;
 for i=1:NbSimu
-    krw_model(i,:) = ParameterMatrix.('krw_end')(i) .* ...
-        ((SW_corey_m(i,:)-ParameterMatrix.('Swir')(i))./...
-        (1-ParameterMatrix.('Swir')(i)-...
-        ParameterMatrix.('Swor')(i))).^ParameterMatrix.('nw')(i);
-    kro_model(i,:) = ParameterMatrix.('kro_end')(i) .* ...
-        ((1 - SW_corey_m(i,:) - ParameterMatrix.('Swor')(i))./...
-        (1 - ParameterMatrix.('Swir')(i) - ParameterMatrix.('Swor')(i))).^...
-        ParameterMatrix.('no')(i);
+    krw_model(i,:) = PriorModelParameters.('krw_end')(i) .* ...
+        ((SW_corey_m(i,:)-PriorModelParameters.('Swir')(i))./...
+        (1-PriorModelParameters.('Swir')(i)-...
+        PriorModelParameters.('Swor')(i))).^PriorModelParameters.('nw')(i);
+    kro_model(i,:) = PriorModelParameters.('kro_end')(i) .* ...
+        ((1 - SW_corey_m(i,:) - PriorModelParameters.('Swor')(i))./...
+        (1 - PriorModelParameters.('Swir')(i) - PriorModelParameters.('Swor')(i))).^...
+        PriorModelParameters.('no')(i);
     
     plot(SW_corey_m(i,:), krw_model(i,:),'b-', SW_corey_m(i,:), ...
         kro_model(i,:), 'r-');
@@ -135,15 +141,36 @@ for i=1:NbSimu
     ylabel('Relative Permeability');
     xlim([0 1]); ylim([0 1]); grid on; hold on;
 end
+set(gcf,'color','w');
+set(gca,'FontSize',24);
+%% Writing out simulation deck 
+TrialName = 'Prior';
 
-%% Writing out the 'dat' files
-TrialName = 'RejectionSample';
-BaselineRunDirectory = ['/media/Scratch2/Data/3DSLRuns/Compressible/' ...
+%% Load baseline simulation deck for 3DSL
+% Path to baseline case
+BaseCaseDatPath = '../../data/3DSLFiles/CompressibleBaseCase.dat';
+
+% Allocate a cell array that we will use to store the baseline
+s=cell(GetNumberOfLines(BaseCaseDatPath),1);
+
+fid = fopen(BaseCaseDatPath);
+lineCt = 1;
+tline = fgetl(fid);
+
+while ischar(tline)
+    s{lineCt} = (tline);
+    lineCt = lineCt + 1;
+    tline = fgetl(fid);
+end
+
+% Directory to store output simulation decks
+OutputDirectory = ['/media/Scratch2/Data/3DSLRuns/Compressible/' ...
     TrialName '/'];
 
+% Generate a seperate deck for each 
 for k=1:NbSimu
     
-    FolderNameIteration = [BaselineRunDirectory 'Run', num2str(k)];
+    FolderNameIteration = [OutputDirectory 'Run', num2str(k)];
     
     %creating an new folder for this iteration
     %checking if there is already a folder with that name
@@ -165,13 +192,13 @@ for k=1:NbSimu
     
     % Fault Multiplier
     F1Mult=['fault_1' blanks(1) ...
-        num2str(ParameterMatrix.('FaultMulti1')(k)) blanks(1) '/'];
+        num2str(PriorModelParameters.('FaultMulti1')(k)) blanks(1) '/'];
     F2Mult=['fault_2' blanks(1) ...
-        num2str(ParameterMatrix.('FaultMulti2')(k)) blanks(1) '/'];
+        num2str(PriorModelParameters.('FaultMulti2')(k)) blanks(1) '/'];
     F3Mult=['fault_3' blanks(1) ...
-        num2str(ParameterMatrix.('FaultMulti3')(k)) blanks(1) '/'];
+        num2str(PriorModelParameters.('FaultMulti3')(k)) blanks(1) '/'];
     F4Mult=['fault_4' blanks(1) ...
-        num2str(ParameterMatrix.('FaultMulti4')(k)) blanks(1) '/'];
+        num2str(PriorModelParameters.('FaultMulti4')(k)) blanks(1) '/'];
     
     fprintf(fileID,'%s',F1Mult);
     fprintf(fileID,'\n');
@@ -195,7 +222,7 @@ for k=1:NbSimu
     end
     
     % Printing the PVTs out - in this case only viscosity is changed
-    Visc=[num2str(ParameterMatrix.('Viscosity')(k)) blanks(1) '0.1 0.4 /'];
+    Visc=[num2str(PriorModelParameters.('Viscosity')(k)) blanks(1) '0.1 0.4 /'];
     fprintf(fileID,'%s',Visc);
     
     KRWOIndex = SearchCellArray('KRWO',s);
@@ -230,7 +257,7 @@ for k=1:NbSimu
     end
     
     % Writing out the OWC
-    OWCValue=['-', num2str(ParameterMatrix.('OWC')(k))];
+    OWCValue=['-', num2str(PriorModelParameters.('OWC')(k))];
     fprintf(fileID,'%s',OWCValue);
     fprintf(fileID,'\n');
     fprintf(fileID, '/\n');
@@ -246,19 +273,5 @@ for k=1:NbSimu
     fclose(fileID);
 end
 
-%% Generate PBS Scripts
-Cluster=2010;
-PreparePBS(NbSimu,'Compressible',TrialName,...
-    '/media/Scratch2/Data/3DSLRuns/Compressible/',Cluster)
-
-%% Copy Include Files
-IncludeFolders = {'depo/','include/'};
-IncludeFoldersDir = '/media/Scratch2/Data/3DSLRuns/';
-OutputPath = ['/media/Scratch2/Data/3DSLRuns/Compressible/' TrialName '/'];
-for i = 1:length(IncludeFolders)
-    Source = [IncludeFoldersDir IncludeFolders{i}];
-    Dest = [OutputPath IncludeFolders{i}];
-    copyfile(Source,Dest);
-end
 
 
