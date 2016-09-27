@@ -1,6 +1,6 @@
 function [ mu_posterior, C_posterior,Dc,Df,Hc,Hf, B, dobs_c] = ...
     ComputeCFCAPosterior(HistoricalStruct, ForecastStruct, TruthRealization, ...
-    EigenTolerance,OutlierPercentile,PlotLevel,FontSize)
+    EigenTolerance,OutlierPercentile,PlotLevel,FontSize,SavePath)
 %ComputeCFCAPosterior Computes posterior distribution of forecasts
 %conditioned to d_obs
 %   Performs CFCA to compute posterior mean and covariance in canonical
@@ -34,6 +34,13 @@ if (nargin < 6)
     PlotLevel = 1;
     FontSize=12;
 end
+
+if (nargin < 8)
+    SaveOn = false;
+else
+    SaveOn = true;
+end
+
 
 Responses_Historical = HistoricalStruct.data;
 NumHistoricalResponses = size(Responses_Historical,3);
@@ -104,7 +111,13 @@ dobs_c=(dobs_fpca-mean(score))*A;
 
 if (PlotLevel == 1)
     PlotLowDimModels(Dc,Hc,dobs_c,'c',FontSize);
+     if SaveOn == true
+            export_fig([SavePath 'Dc_Hc'], '-png','-m3');
+     end
     PlotLowDimModels(Df,Hf,dobs_fpca,'f',FontSize);
+    if SaveOn == true
+            export_fig([SavePath 'Df_Hf'], '-png','-m3');
+    end
 end
 
 % Perform a normal score transform

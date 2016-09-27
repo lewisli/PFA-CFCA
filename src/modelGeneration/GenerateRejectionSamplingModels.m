@@ -7,17 +7,18 @@
 % Script to generate multiple StudioSL runs starting from some base case
 clear all; close all;
 
-% Case Name
-CaseName = 'Prior';
-
 % Number of simulations
-NbSimu = 500;     
+NbSimu = 15000;     
 
 % Number of parameters we will vary
 NbParams = 12;    
 
 % Set random seed
 rng('shuffle');
+
+% Case Name
+CaseName='Direct_Forecasting';
+TrialName = 'RejectionSampling_Case_2';
 
 %% Set Prior Parameter Distributions
 % ParameterRanges is a struct that contains
@@ -144,11 +145,11 @@ end
 set(gcf,'color','w');
 set(gca,'FontSize',24);
 %% Writing out simulation deck 
-TrialName = 'Prior';
+
 
 %% Load baseline simulation deck for 3DSL
 % Path to baseline case
-BaseCaseDatPath = '../../data/3DSLFiles/CompressibleBaseCase.dat';
+BaseCaseDatPath = '../../data/3DSLFiles/CompressibleBaseCase_2.dat';
 
 % Allocate a cell array that we will use to store the baseline
 s=cell(GetNumberOfLines(BaseCaseDatPath),1);
@@ -164,8 +165,8 @@ while ischar(tline)
 end
 
 % Directory to store output simulation decks
-OutputDirectory = ['/media/Scratch2/Data/3DSLRuns/Compressible/' ...
-    TrialName '/'];
+OutputDir = '/media/Scratch2/Data/';
+OutputDirectory = [OutputDir '/' CaseName '/' TrialName '/'];
 
 % Generate a seperate deck for each 
 for k=1:NbSimu
@@ -273,6 +274,10 @@ for k=1:NbSimu
     fclose(fileID);
 end
 %%
+
+ClusterName=2010;
+PreparePBS(NbSimu,CaseName,TrialName,OutputDir,ClusterName);
+
 
 
 

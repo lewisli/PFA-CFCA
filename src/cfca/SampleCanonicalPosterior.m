@@ -1,6 +1,6 @@
 function [ h_output,hf_out] = SampleCanonicalPosterior( ...
     mu_posterior, C_posterior, NumEstimates,Hc,B,Hf,Time_Forecast,...
-    predPCA, ReferenceForecastFirstStep, RJTolerance,DirectionalValidity)
+    predPCA, ReferenceForecastFirstStep, RJTolerance,DirectionalValidity,SavePath)
 %SampleCanonicalPosterior Generate samples of the canonical posterior (that
 %is sampled from f(h|d_obs), and reconstructs the time series
 %   Samples from a multivariate Gaussian determined by input mean and
@@ -31,12 +31,20 @@ if (nargin < 9)
     DirectionalValidity = 0;
     RJTolerance = 100;
 end
+
+if (nargin < 10)
+    SaveOn = false;
+else
+    SaveOn = true;
+end
+
+
 addpath('../../thirdparty/fda_matlab');
 h_output = zeros(NumEstimates,length(Time_Forecast));
 hc_out = zeros(NumEstimates,length(mu_posterior));
 hf_out = zeros(NumEstimates,length(mu_posterior));
 NumValid = 1;
-
+FontSize=20;
 rng('shuffle');
 
 CycleSize = 10000;
@@ -130,12 +138,37 @@ if (all(eig(C_posterior) >= 0))
             NumOut = size(hf_out(NumValid:end,:),2);
             hf_out(NumValid:end,:) = ValidHf(1:RemainingModels,1:NumOut);
             
+            figure(2);
+            hold on;
+            scatter(Hc(:,1),Hc(:,2),100,[0.5 0.5 0.5]);
+            scatter(PosteriorSamples(1,1:NumEstimates),...
+                PosteriorSamples(2,1:NumEstimates),100,'r','filled');
+            hlegend = legend('Prior Models','Posterior Samples');
+            set(hlegend,'fontsize',FontSize-4);
+            set(hlegend,'location','best');
+            set(gcf,'color','w');
+            xlabel('h_1^c','fontsize',FontSize);
+            ylabel('h_2^c','fontsize',FontSize);
+            grid on;
+            set(gca,'fontsize',FontSize-4);
+            
+            if SaveOn == true
+                export_fig([SavePath 'PosteriorSamples'], '-png','-m3');
+            end
+    
+                
             return
         end
         
         display(['After ' num2str(NumCycles) ' cycles. Rejection sampler has found '...
             num2str(NumValid) ' models']);
+        
+        
     end
+    
+    
 end
+
+
 end
 

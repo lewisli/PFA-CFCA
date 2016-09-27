@@ -17,16 +17,22 @@
 %   PlotLevel: Level 2 -> Plot eigenvalues variance
 %   PlotLevel: Level 3 -> Plot reconstructions
 %   PlotLevel: Level 4 -> Plot everything
+%   SavePath: Directory to save figures
 %
 %
 % Return     :
 %	HarmonicScores:	The harmonic scores w
 %
-function [predPCA] = ComputeHarmonicScores(CFCAStruct,PlotLevel)
+function [predPCA] = ComputeHarmonicScores(CFCAStruct,PlotLevel,SavePath)
 
 % Default behaviour is to plot nothing
 if (nargin < 2)
     PlotLevel = 0;
+end
+if (nargin < 3)
+    SaveOn = false;
+else
+    SaveOn = true;
 end
 
 FontSize = 24;
@@ -66,6 +72,10 @@ for r = 1:NumResponses
         set(h, 'Units', 'normalized', 'Position', [0,0,0.75,0.75]);
         set(gcf,'color','w');
         set(gca,'FontSize',FontSize);
+        
+        if SaveOn == true
+            export_fig([SavePath CFCAStruct.type '_Basis'], '-png','-m3');
+        end
     end
     
     CurrentResponse = Data(:,:,r)';
@@ -84,6 +94,10 @@ for r = 1:NumResponses
         set(gca,'FontSize',FontSize);
         set(gcf,'color','w');
         set(hEigen, 'Units', 'normalized', 'Position', [0,0,0.75,0.75]);
+        
+        if SaveOn == true
+            export_fig([SavePath CFCAStruct.type '_Eigenvalues'], '-png','-m3');
+        end
     end
     
     if (PlotLevel == 3 || PlotLevel == 4 && r == 1)
@@ -106,6 +120,10 @@ for r = 1:NumResponses
         set(gca,'FontSize',FontSize);
         axis square; axis tight;
         set(h2, 'Units', 'normalized', 'Position', [0,0,0.75,0.75]);
+        
+        if SaveOn == true
+            export_fig([SavePath CFCAStruct.type '_Reconstruction'], '-png','-m3');
+        end
     end
 end
 
