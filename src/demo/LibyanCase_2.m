@@ -5,7 +5,7 @@ NumRealizations = 500;
 addpath('../util');
 
 load('../../data/Case2/PriorModels/Prior.mat');
-CaseName = 'LibyanCase2';
+CaseName = 'NoiseLevel500';
 %% Generate Data Structs
 ForecastColumn = 4;
 HistoricalColumn = 4;
@@ -30,7 +30,7 @@ ForecastStruct.time = linspace(3500,7500,length(ForecastStruct.time));
 
 %%
 % Set aside one realization that we will deem the "reference";
-TruthRealization = 12;
+TruthRealization = 120;
 
 close all;
 % Plot to verify data structures/choice of input/output
@@ -60,8 +60,9 @@ predPCA = ComputeHarmonicScores(ForecastStruct,3,SaveFolder);
 % after FPCA. Keeping too many eigenvalues may need to highly oscillating
 % posterior times series; while keeping too little results in oversmoothed
 % and unrealistic models
-EigenvalueTolerance = 0.95;
+EigenvalueTolerance = 0.9;
 OutlierPercentile = 95;
+epsilon = 500;
 
 % Run CFCA: The results are the mean/covariance of h*(in Gaussian space)
 % and Dc,Hc are the prior model coefficients in the canonical space
@@ -69,22 +70,23 @@ PlotLevel = 1;
 FontSize = 24;
 [ mu_posterior, C_posterior, Dc, Df, Hc, Hf, B, dobs_c] = ComputeCFCAPosterior(...
     HistoricalStruct, ForecastStruct, TruthRealization, EigenvalueTolerance,...
-    OutlierPercentile,PlotLevel,FontSize,SaveFolder);
+    OutlierPercentile,PlotLevel,FontSize,SaveFolder,epsilon);
 
 %% Sample from CFCA posterior and transform forecasts back into time domain
-NumPosteriorSamples = 100;
+close all;
+NumPosteriorSamples = 1000;
 
 [SampledPosteriorRealizations,Hf_post]= SampleCanonicalPosterior(...
     mu_posterior,C_posterior,NumPosteriorSamples,Hc,B,Hf,...
     ForecastStruct.time,predPCA,0,0,0,SaveFolder);
 
-% % Compute quantiles
-% [PriorQuantiles, PosteriorQuantiles] = ComputeQuantiles(...
-%     ForecastStruct.data, SampledPosteriorRealizations);
-% 
-% % Plot sampled responses and quantiles
-% PlotPosteriorSamplesAndQuantiles(ForecastStruct,TruthRealization, ...
-%     SampledPosteriorRealizations,PriorQuantiles,PosteriorQuantiles);
-% 
-% display(['Average Posterior Distance: ' num2str(mean(PosteriorQuantiles(3,:) - ...
-%     PosteriorQuantiles(1,:)))]);
+% Compute quantiles
+[PriorQuantiles, PosteriorQuantiles] = ComputeQuantiles(...
+    ForecastStruct.data, SampledPosteriorRealizations);
+close all;
+% Plot sampled responses and quantiles
+PlotPosteriorSamplesAndQuantiles(ForecastStruct,TruthRealization, ...
+    SampledPosteriorRealizations,PriorQuantiles,PosteriorQuantiles,SaveFolder);
+
+display(['Average Posterior Distance: ' num2str(mean(PosteriorQuantiles(3,:) - ...
+    PosteriorQuantiles(1,:)))]);

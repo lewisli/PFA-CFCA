@@ -1,6 +1,6 @@
 function [ mu_posterior, C_posterior,Dc,Df,Hc,Hf, B, dobs_c] = ...
     ComputeCFCAPosterior(HistoricalStruct, ForecastStruct, TruthRealization, ...
-    EigenTolerance,OutlierPercentile,PlotLevel,FontSize,SavePath)
+    EigenTolerance,OutlierPercentile,PlotLevel,FontSize,SavePath,epsilon)
 %ComputeCFCAPosterior Computes posterior distribution of forecasts
 %conditioned to d_obs
 %   Performs CFCA to compute posterior mean and covariance in canonical
@@ -111,12 +111,12 @@ dobs_c=(dobs_fpca-mean(score))*A;
 
 if (PlotLevel == 1)
     PlotLowDimModels(Dc,Hc,dobs_c,'c',FontSize);
-     if SaveOn == true
-            export_fig([SavePath 'Dc_Hc'], '-png','-m3');
-     end
+    if SaveOn == true
+        export_fig([SavePath 'Dc_Hc'], '-png','-m3');
+    end
     PlotLowDimModels(Df,Hf,dobs_fpca,'f',FontSize);
     if SaveOn == true
-            export_fig([SavePath 'Df_Hf'], '-png','-m3');
+        export_fig([SavePath 'Df_Hf'], '-png','-m3');
     end
 end
 
@@ -130,9 +130,19 @@ G = Dc'/Hc_gauss';
 DDiff= Dc'-G*Hc_gauss';
 C_T = DDiff*DDiff'/length(Dc);
 
+
+if epsilon ==0
+    C_Dc = zeros(size(C_T));
+else
+    C_Df = EstimateFunctionalErrorCovariance( HistoricalStruct,EigenTolerance,epsilon);
+    C_Dc = A'*C_Df*A;
+end
+
+
 % Perform Gaussian Regression
-mu_posterior = H_CG_Mean + C_H*G'*pinv(G*C_H*G' + C_T)*(dobs_c'-G*H_CG_Mean);
-C_posterior = inv(G'*pinv(C_T)*G + inv(C_H));
+mu_posterior = H_CG_Mean + C_H*G'*pinv(G*C_H*G' + C_T+C_Dc)*(dobs_c'-G*H_CG_Mean);
+C_posterior = C_H - C_H*G'*inv(G*C_H*G' + C_T+C_Dc)*G*C_H;
+%C_posterior = inv(G'*pinv(C_T)*G + inv(C_H));
 
 end
 
