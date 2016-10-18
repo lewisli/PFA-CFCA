@@ -28,12 +28,12 @@ else
 end
 
 for i = 1:NumRealizations
-    JobName = [TrialName '_Run' num2str(i)];
+    JobName = [TrialName '_Run' num2str(i-1)];
     JobNames{i} = JobName;
     FilePath = [BaselineRunDirectory JobName '.pbs'];
     ClusterDataFileDir = [ClusterDataDir '/' TrialName ...
-        '/Run' num2str(i) '/']
-    ClusterDataFilePath = [ClusterDataFileDir 'Run' num2str(i) '.dat'];
+        '/Run' num2str(i-1) '/']
+    ClusterDataFilePath = [ClusterDataFileDir 'Run' num2str(i-1) '.dat'];
     
     fileID = fopen(FilePath,'w+');
     
@@ -59,7 +59,12 @@ for i = 1:NumRealizations
     end
     fprintf(fileID,'echo Looking for RLMS License at $RLM_LICENSE\n');
     fprintf(fileID,[ClusterExecutable ' ' ClusterDataFilePath '\n']);
-    fprintf(fileID, ['find ' ClusterDataFileDir ' -type f ! -name "*.wel*" -delete']);
+    fprintf(fileID, ['find ' ClusterDataFileDir ' -type f -name "*.UNRST*" -delete\n']);
+    fprintf(fileID, ['find ' ClusterDataFileDir ' -type f -name "*.GRID*" -delete\n']);
+    fprintf(fileID, ['find ' ClusterDataFileDir ' -type f -name "*.INIT*" -delete\n']);
+    fprintf(fileID, ['find ' ClusterDataFileDir ' -type f -name "*.zne*" -delete\n']);
+    fprintf(fileID, ['find ' ClusterDataFileDir ' -type f -name "*.rst*" -delete\n']);
+    fprintf(fileID, ['find ' ClusterDataFileDir ' -type f -name "*.wcc*" -delete\n']);
     fprintf(fileID, '\n');
     
     fclose(fileID);

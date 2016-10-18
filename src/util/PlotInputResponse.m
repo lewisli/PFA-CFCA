@@ -53,11 +53,11 @@ for i = 1:NumResponses
         h2 = plot(DataStruct.time, ...
             DataStruct.data(TruthRealization,:,i)','r','LineWidth',3);
         hlegend = legend([h1,h2],'Prior','Reference');
-        axis tight;
-        set(gcf,'color','w');
-        set(gca,'FontSize',FontSize);
         set(hlegend,'Location','southwest');
     end
+    axis tight;
+    set(gcf,'color','w');
+    set(gca,'FontSize',FontSize);
     
     if (mod(i,MaxFiguresPerPage) == 0 || i == NumResponses)
         FigID =ceil(i/MaxFiguresPerPage); 
