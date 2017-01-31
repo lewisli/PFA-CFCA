@@ -138,23 +138,23 @@ if (all(eig(C_posterior) >= 0))
             NumOut = size(hf_out(NumValid:end,:),2);
             hf_out(NumValid:end,:) = ValidHf(1:RemainingModels,1:NumOut);
             
-            figure(2);
-            hold on;
-            scatter(Hc(:,1),Hc(:,2),100,[0.5 0.5 0.5]);
-            scatter(PosteriorSamples(1,1:NumEstimates),...
-                PosteriorSamples(2,1:NumEstimates),100,'r','filled');
-            hlegend = legend('Prior Models','Posterior Samples');
-            set(hlegend,'fontsize',FontSize-4);
-            set(hlegend,'location','best');
-            set(gcf,'color','w');
-            xlabel('h_1^c','fontsize',FontSize);
-            ylabel('h_2^c','fontsize',FontSize);
-            grid on;
-            set(gca,'fontsize',FontSize-4);
-            
-            if SaveOn == true
-                export_fig([SavePath 'PosteriorSamples'], '-png','-m3');
-            end
+%             figure(2);
+%             hold on;
+%             scatter(Hc(:,1),Hc(:,2),100,[0.5 0.5 0.5]);
+%             scatter(PosteriorSamples(1,1:NumEstimates),...
+%                 PosteriorSamples(2,1:NumEstimates),100,'r','filled');
+%             hlegend = legend('Prior Models','Posterior Samples');
+%             set(hlegend,'fontsize',FontSize-4);
+%             set(hlegend,'location','best');
+%             set(gcf,'color','w');
+%             xlabel('h_1^c','fontsize',FontSize);
+%             ylabel('h_2^c','fontsize',FontSize);
+%             grid on;
+%             set(gca,'fontsize',FontSize-4);
+%             
+%             if SaveOn == true
+%                 export_fig([SavePath 'PosteriorSamples'], '-png','-m3');
+%             end
     
                 
             return

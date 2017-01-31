@@ -41,7 +41,7 @@ else
     SaveOn = true;
 end
 
-
+    SaveOn = false;
 Responses_Historical = HistoricalStruct.data;
 NumHistoricalResponses = size(Responses_Historical,3);
 
@@ -131,7 +131,7 @@ DDiff= Dc'-G*Hc_gauss';
 C_T = DDiff*DDiff'/length(Dc);
 
 
-if epsilon ==0
+if (epsilon ==0)
     C_Dc = zeros(size(C_T));
 else
     C_Df = EstimateFunctionalErrorCovariance( HistoricalStruct,EigenTolerance,epsilon);
@@ -141,7 +141,7 @@ end
 
 % Perform Gaussian Regression
 mu_posterior = H_CG_Mean + C_H*G'*pinv(G*C_H*G' + C_T+C_Dc)*(dobs_c'-G*H_CG_Mean);
-C_posterior = C_H - C_H*G'*inv(G*C_H*G' + C_T+C_Dc)*G*C_H;
+C_posterior = C_H - C_H*G'*inv(G*C_H*G' + C_T)*G*C_H;
 %C_posterior = inv(G'*pinv(C_T)*G + inv(C_H));
 
 end
